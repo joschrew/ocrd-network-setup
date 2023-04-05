@@ -1,0 +1,50 @@
+process_queue:
+  address: 172.17.0.1
+  port: 5672
+  credentials:
+    username: admin
+    password: admin
+  ssh:
+    username: cloud
+    path_to_privkey: /sshkey
+database:
+  address: 172.17.0.1
+  port: 27018
+  credentials:
+    username: admin
+    password: admin
+  ssh:
+    username: cloud
+    path_to_privkey: /sshkey
+hosts:
+  - address: 172.17.0.1
+    username: cloud
+    path_to_privkey: /sshkey
+    workers:
+      - name: ocrd-dummy
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-cis-ocropy-binarize
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-anybaseocr-crop
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-skimage-binarize
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-skimage-denoise
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-tesserocr-deskew
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-cis-ocropy-segment
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-cis-ocropy-dewarp
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-calamari-recognize
+        number_of_instance: 1
+        deploy_type: native

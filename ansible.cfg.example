@@ -1,0 +1,4 @@
+[defaults]
+inventory = $HOME/repos/PUT-REPO-NAME-HERE/hosts
+# This is for enableing plugins. profile_tasks is to give an overview at the end of a run
+callbacks_enabled = profile_tasks

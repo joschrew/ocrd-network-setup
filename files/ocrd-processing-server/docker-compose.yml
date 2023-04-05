@@ -1,0 +1,57 @@
+version: '3.3'
+
+services:
+  reverse-proxy:
+    image: traefik:2.9
+    container_name: ocrd-reverse-proxy
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  processing-server:
+    container_name: ocrd-processing-server
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - "./ocrd-ps-config.yml:/ocrd-ps-config.yml"
+      - "$HOME/.ssh/ocrd-self-login.key:/sshkey"
+    command: ocrd processing-server /my-test-config.yml -a 0.0.0.0:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.processing-server.rule=PathPrefix(`/`)"
+
+  webapi:
+    container_name: ocrd-webapi
+    build:
+      context: "$HOME/repos/ocrd-webapi-implementation"
+    ports:
+      - 8001:8000
+    volumes:
+      - "/tmp/ocrd-webapi-data:/tmp/ocrd-webapi-data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webapi-workspace.rule=PathPrefix(`/workspace`)"
+      - "traefik.http.routers.webapi-workflow.rule=PathPrefix(`/workflow`)"
+    environment:
+      - OCRD_WEBAPI_SERVER_PATH=http://c109-066.cloud.gwdg.de
+      - OCRD_WEBAPI_BASE_DIR=/tmp/ocrd-webapi-data
+      - OCRD_WEBAPI_DB_URL=mongodb://172.17.0.1:27018
+      - OCRD_WEBAPI_DB_NAME=ocrd
+      - OCRD_WEBAPI_USERNAME={{ webapiuser }}
+      - OCRD_WEBAPI_PASSWORD={{ webapipass }}
+    user: "1000:1000"
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450

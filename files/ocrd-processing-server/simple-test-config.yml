@@ -1,0 +1,26 @@
+process_queue:
+  address: 172.17.0.1
+  port: 5672
+  credentials:
+    username: admin
+    password: admin
+  ssh:
+    username: cloud
+    path_to_privkey: /sshkey
+database:
+  address: 172.17.0.1
+  port: 27018
+  credentials:
+    username: admin
+    password: admin
+  ssh:
+    username: cloud
+    path_to_privkey: /sshkey
+hosts:
+  - address: 172.17.0.1
+    username: cloud
+    path_to_privkey: /sshkey
+    workers:
+      - name: ocrd-dummy
+        number_of_instance: 1
+        deploy_type: native

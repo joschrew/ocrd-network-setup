@@ -1,0 +1,4 @@
+hosts
+ansible.cfg
+files/ocrd-processing-server/vars-ocrd.yml
+files/ocrd-processing-server/ssh-pub-keys/*

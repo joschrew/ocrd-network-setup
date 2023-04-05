@@ -1,0 +1,110 @@
+---
+- hosts: ocrd-dev
+  vars:
+    - core_repo_path: /home/cloud/repos/core
+    - venv_path: /home/cloud/venv-ocrd
+    - webapiuser: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapiuser }}"
+    - webapipass: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapipass }}"
+
+  # roles:
+  #   - role: install_mongosh
+
+  tasks:
+
+  - name: Add ssh keys
+    authorized_key:
+      user: cloud
+      state: present
+      key: "{{ lookup('file', item) }}"
+    with_fileglob:
+      - files/ocrd-processing-server/ssh-pub-keys/*.pub
+
+  - name: Create tools dir
+    file:
+      path: $HOME/tools
+      state: directory
+      mode: '0755'
+
+  - name: Copy script to install venv
+    copy:
+      src: files/ocrd-processing-server/ocrd-venv.sh
+      dest: $HOME/tools/ocrd-venv.sh
+      mode: '0755'
+    tags:
+      - "copy-script"
+
+  - name: Run venv install script
+    command:
+      cmd: bash tools/ocrd-venv.sh
+      creates: "{{ venv_path }}"
+
+  - name: Add venv to PATH
+    blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED BLOCK Add venv to PATH"
+      path: '/home/cloud/.profile'
+      block: |
+        if [ -d '{{ venv_path }}/bin' ]; then
+          PATH={{ venv_path }}/bin:$PATH
+        fi
+
+  - name: Create ssh-key for self login
+    openssh_keypair:
+      path: "~/.ssh/ocrd-self-login.key"
+      type: rsa
+      force: no
+
+  - name: Read ssh-key for next task
+    command: "cat $HOME/.ssh/ocrd-self-login.key.pub"
+    register: myownpubkey
+
+  - name: Add ssh-key for self login
+    authorized_key:
+      user: cloud
+      state: present
+      key: "{{ myownpubkey.stdout }}"
+
+  - name: Clone webapi
+    git:
+      repo: https://github.com/OCR-D/ocrd-webapi-implementation
+      dest: "$HOME/repos/ocrd-webapi-implementation"
+      version: docker-with-user
+      update: yes
+
+  - name: Upload  files for processing-server
+    copy:
+      src: '{{ item }}'
+      dest: $HOME/tools
+    loop:
+      - files/ocrd-processing-server/Dockerfile
+      - files/ocrd-processing-server/ocrd-ps-config.yml
+
+  - name: Upload docker-compose
+    template:
+      src: files/ocrd-processing-server/docker-compose.yml
+      dest: $HOME/tools
+
+  # the workers are run as user cloud, volume folder should have cloud as owner to be writeable
+  # properly
+  - name: Create volume folder for workspaces
+    file:
+      path: /tmp/ocrd-webapi-data
+      state: directory
+      mode: '0755'
+
+  - name: Copy script for depoloying the service
+    copy:
+      src: files/ocrd-processing-server/start-docker.py
+      dest: /home/cloud/start.py
+      mode: '0755'
+
+  - name: Install stuff with apt needed to run the startup-script
+    become: true
+    apt:
+      pkg:
+        - python3-pip
+
+  - name: Install stuff with pip needed to run the startup-script
+    pip:
+      name:
+        - click
+        - sh

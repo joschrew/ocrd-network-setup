@@ -1,0 +1,3 @@
+# just a reminder how to execute stuff
+ansible-playbook p_install_processing_server.yml -e "target=ocrd-dev"
+ansible-playbook p_install_processing_server.yml
