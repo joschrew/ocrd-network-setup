@@ -42,13 +42,28 @@ services:
       - "traefik.http.routers.webapi-workspace.rule=PathPrefix(`/workspace`)"
       - "traefik.http.routers.webapi-workflow.rule=PathPrefix(`/workflow`)"
     environment:
-      - OCRD_WEBAPI_SERVER_PATH=http://c109-066.cloud.gwdg.de
+      - OCRD_WEBAPI_SERVER_PATH=http://141.5.109.66
       - OCRD_WEBAPI_BASE_DIR=/tmp/ocrd-webapi-data
       - OCRD_WEBAPI_DB_URL=mongodb://172.17.0.1:27018
       - OCRD_WEBAPI_DB_NAME=ocrd
       - OCRD_WEBAPI_USERNAME={{ webapiuser }}
       - OCRD_WEBAPI_PASSWORD={{ webapipass }}
     user: "1000:1000"
+
+  docs:
+    build: https://github.com/joschrew/fastapi-docs-combine.git#main
+    ports:
+      - "8091:80"
+    environment:
+      - "COMBINE_URLS=http://webapi:8000/openapi.json http://processing-server:8000/openapi.json"
+      - "COMBINE_TITLE=OCR-D processing server & webapi"
+      - "COMBINE_IGNORE=/ /stop /discovery"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-docs.rule=PathPrefix(`/docs`)"
+      - "traefik.http.middlewares.my-replacepath.replacepath.path=/combined_docs"
+      - "traefik.http.routers.my-docs.middlewares=my-replacepath"
+      - "traefik.http.routers.my-docs2.rule=PathPrefix(`/customdocs`)"
 
 networks:
   default:
