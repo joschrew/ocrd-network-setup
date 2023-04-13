@@ -67,7 +67,6 @@
     git:
       repo: https://github.com/OCR-D/ocrd-webapi-implementation
       dest: "$HOME/repos/ocrd-webapi-implementation"
-      version: docker-with-user
       update: yes
 
   - name: Upload  files for processing-server
