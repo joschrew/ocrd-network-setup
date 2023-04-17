@@ -99,6 +99,8 @@ update_tesserocr=0
 pull_package ocrd_tesserocr https://github.com/OCR-D/ocrd_tesserocr.git $UPDATE || update_tesserocr=$?
 update_calamari=0
 pull_package ocrd_calamari https://github.com/OCR-D/ocrd_calamari.git $UPDATE || update_calamari=$?
+update_fileformat=0
+pull_package ocrd_fileformat https://github.com/OCR-D/ocrd_fileformat.git $UPDATE || update_fileformat=$?
 
 # install processors
 . $VENV/bin/activate
@@ -127,6 +129,12 @@ fi
 cd $REPOS/ocrd_calamari
 if ! test -f $VENV/bin/ocrd-calamari-recognize || test $update_calamari -ne 0; then
 	make install
+fi
+cd $REPOS/ocrd_fileformat
+if ! test -f $VENV/bin/ocrd-fileformat-transform || test $update_fileformat -ne 0; then
+	git submodule update --init --recursive
+	# make install reinstalls ocrd-core which would be redundant
+	make install-fileformat install-tools
 fi
 
 deactivate

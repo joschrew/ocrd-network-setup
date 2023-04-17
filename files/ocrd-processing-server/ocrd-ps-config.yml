@@ -48,3 +48,9 @@ hosts:
       - name: ocrd-calamari-recognize
         number_of_instance: 1
         deploy_type: native
+      - name: ocrd-fileformat-transform
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-tesserocr-recognize
+        number_of_instance: 1
+        deploy_type: native
