@@ -113,3 +113,11 @@
       src: files/ocrd-processing-server/download-ocrd-resources.sh
       dest: $HOME/tools/download-ocrd-resources.sh
       mode: '0755'
+
+  - name: Set TESSDATA_PREFIX
+    blockinfile:
+      marker: "# {mark} ANSIBLE MANAGED BLOCK Add tessdata_prefix"
+      path: '/home/cloud/.profile'
+      block: |
+        TESSDATA_PREFIX=/home/cloud/.local/share/ocrd-resources/ocrd-tesserocr-recognize/
+        export TESSDATA_PREFIX
