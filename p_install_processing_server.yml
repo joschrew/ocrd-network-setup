@@ -107,3 +107,9 @@
       name:
         - click
         - sh
+
+  - name: Upload script to download ocrd-models
+    copy:
+      src: files/ocrd-processing-server/download-ocrd-resources.sh
+      dest: $HOME/tools/download-ocrd-resources.sh
+      mode: '0755'
