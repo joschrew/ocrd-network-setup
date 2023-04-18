@@ -67,7 +67,7 @@
     git:
       repo: https://github.com/OCR-D/ocrd-webapi-implementation
       dest: "$HOME/repos/ocrd-webapi-implementation"
-      update: yes
+      version: "v0.10.0"
 
   - name: Upload  files for processing-server
     copy:
