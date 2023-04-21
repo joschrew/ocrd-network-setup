@@ -54,3 +54,18 @@ hosts:
       - name: ocrd-tesserocr-recognize
         number_of_instance: 1
         deploy_type: native
+      - name: ocrd-olena-binarize
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-cis-ocropy-denoise
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-tesserocr-segment-region
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-segment-repair
+        number_of_instance: 1
+        deploy_type: native
+      - name: ocrd-cis-ocropy-clip
+        number_of_instance: 1
+        deploy_type: native
