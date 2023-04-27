@@ -2,7 +2,7 @@
 - hosts: ocrd-dev
   vars:
     - core_repo_path: /home/cloud/repos/core
-    - venv_path: /home/cloud/venv-ocrd
+    - venv_path: /home/cloud/repos/ocrd_all/venv
     - webapiuser: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapiuser }}"
     - webapipass: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapipass }}"
 
@@ -11,7 +11,34 @@
 
   tasks:
 
-  - name: Add ssh keys
+  - name: Install dependencies with a apt
+    become: true
+    apt:
+      pkg:
+        - make
+        - python3-pip
+
+  - name: Clone ocrd_all
+    git:
+      repo: https://github.com/OCR-D/ocrd_all
+      dest: "$HOME/repos/ocrd_all"
+      update: false
+      recursive: false
+
+  - name: install dependencies for ocrd_all
+    command: make deps-ubuntu
+    become: true
+    args:
+      chdir: /home/cloud/repos/ocrd_all
+      creates: /home/cloud/repos/ocrd_all/venv
+
+  - name: create venv with ocrd_all (takes about 35 Minutes)
+    command: make all
+    args:
+      chdir: /home/cloud/repos/ocrd_all
+      creates: /home/cloud/repos/ocrd_all/venv
+
+  - name: Add ssh keys for coworkers to log into vm
     authorized_key:
       user: cloud
       state: present
@@ -25,25 +52,12 @@
       state: directory
       mode: '0755'
 
-  - name: Copy script to install venv
-    copy:
-      src: files/ocrd-processing-server/ocrd-venv.sh
-      dest: $HOME/tools/ocrd-venv.sh
-      mode: '0755'
-    tags:
-      - "copy-script"
-
-  - name: Run venv install script
-    command:
-      cmd: bash tools/ocrd-venv.sh
-      creates: "{{ venv_path }}"
-
   - name: Add venv to PATH
     blockinfile:
       marker: "# {mark} ANSIBLE MANAGED BLOCK Add venv to PATH"
       path: '/home/cloud/.profile'
       block: |
-        if [ -d '{{ venv_path }}/bin' ]; then
+        if [ -d '{{ venv_path }}/bin' ] && [[ ":$PATH:" != *":{{ venv_path }}/bin:"* ]]; then
           PATH={{ venv_path }}/bin:$PATH
         fi
 
@@ -96,12 +110,6 @@
       dest: /home/cloud/start.py
       mode: '0755'
 
-  - name: Install stuff with apt needed to run the startup-script
-    become: true
-    apt:
-      pkg:
-        - python3-pip
-
   - name: Install stuff with pip needed to run the startup-script
     pip:
       name:
@@ -113,3 +121,10 @@
       src: files/ocrd-processing-server/download-ocrd-resources.sh
       dest: $HOME/tools/download-ocrd-resources.sh
       mode: '0755'
+
+  - name: call ocrd-models-download-script
+    command:
+      cmd: bash tools/download-ocrd-resources.sh
+      creates:
+        - "{{ venv_path }}/share/tessdata/Fraktur.traineddata"
+        - /home/cloud/.local/share/ocrd-resources
