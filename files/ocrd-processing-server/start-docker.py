@@ -3,6 +3,7 @@ import click
 import sh
 import os
 import sys
+import time
 from pathlib import Path
 
 
@@ -21,6 +22,12 @@ def cli():
 def start(build=False):
     """ Start the processing server
     """
+    logfile = "/tmp/ocrd-processing-server-startup.log"
+    if Path(logfile).exists():
+        sh.mv(
+            logfile,
+            f"/tmp/ocrd-processing-server-startup-{time.strftime('%Y-%m-%d-%H-%M-%S')}.log",
+        )
     os.chdir(Path.home() / "tools")
     sh.docker_compose("down", "--remove-orphans", _out=sys.stdout, _err=sys.stderr)
     if build:
