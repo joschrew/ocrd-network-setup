@@ -126,3 +126,9 @@
     command:
       cmd: bash tools/download-ocrd-resources.sh
       creates: /home/cloud/.local/share/ocrd-resources
+
+  - name: Copy script for updating the venv regarding core
+    copy:
+      src: files/ocrd-processing-server/update-core-in-venv.sh
+      dest: /home/cloud/tools/update-core-in-venv.sh
+      mode: '0755'

@@ -17,6 +17,6 @@ RUN mkdir /repos && \
 	cd /repos &&  \
 	git clone https://github.com/ocr-d/core.git && \
 	cd core && \
-	git checkout processing-serv-ext && \
+	git checkout processor-server && \
 	make deps-ubuntu && \
 	make install

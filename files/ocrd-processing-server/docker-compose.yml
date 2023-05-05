@@ -24,7 +24,7 @@ services:
     volumes:
       - "./ocrd-ps-config.yml:/ocrd-ps-config.yml"
       - "$HOME/.ssh/ocrd-self-login.key:/sshkey"
-    command: ocrd processing-server ocrd-ps-config.yml -a 0.0.0.0:8000
+    command: ocrd network processing-server ocrd-ps-config.yml -a 0.0.0.0:8000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.processing-server.rule=PathPrefix(`/`)"
