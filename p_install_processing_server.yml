@@ -125,6 +125,4 @@
   - name: call ocrd-models-download-script
     command:
       cmd: bash tools/download-ocrd-resources.sh
-      creates:
-        - "{{ venv_path }}/share/tessdata/Fraktur.traineddata"
-        - /home/cloud/.local/share/ocrd-resources
+      creates: /home/cloud/.local/share/ocrd-resources
