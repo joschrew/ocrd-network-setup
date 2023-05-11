@@ -4,18 +4,14 @@ process_queue:
   credentials:
     username: admin
     password: admin
-  ssh:
-    username: cloud
-    path_to_privkey: /sshkey
+  skip_deployment: true
 database:
   address: 172.17.0.1
   port: 27018
   credentials:
     username: admin
     password: admin
-  ssh:
-    username: cloud
-    path_to_privkey: /sshkey
+  skip_deployment: true
 hosts:
   - address: 172.17.0.1
     username: cloud

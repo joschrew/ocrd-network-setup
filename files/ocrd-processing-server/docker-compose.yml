@@ -16,23 +16,24 @@ services:
 
   processing-server:
     container_name: ocrd-processing-server
+    # replace with image when everything needed was merged
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: https://github.com/OCR-D/core.git#ocrd-network-optional-deploy
+      args:
+        BASE_IMAGE: ubuntu:20.04
     ports:
       - 8000:8000
     volumes:
       - "./ocrd-ps-config.yml:/ocrd-ps-config.yml"
       - "$HOME/.ssh/ocrd-self-login.key:/sshkey"
-    command: ocrd network processing-server ocrd-ps-config.yml -a 0.0.0.0:8000
+    command: ocrd network processing-server /ocrd-ps-config.yml -a 0.0.0.0:8000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.processing-server.rule=PathPrefix(`/`)"
 
   webapi:
     container_name: ocrd-webapi
-    build:
-      context: "$HOME/repos/ocrd-webapi-implementation"
+    build: https://github.com/OCR-D/ocrd-webapi-implementation.git#v0.10.0
     ports:
       - 8001:8000
     volumes:
@@ -64,6 +65,26 @@ services:
       - "traefik.http.middlewares.my-replacepath.replacepath.path=/combined_docs"
       - "traefik.http.routers.my-docs.middlewares=my-replacepath"
       - "traefik.http.routers.my-docs2.rule=PathPrefix(`/customdocs`)"
+
+  database:
+    image: "mongo"
+    container_name: ocrd-mongodb
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME=admin"
+      - "MONGO_INITDB_ROOT_PASSWORD=admin"
+    ports:
+      - "27018:27017"
+    # possibly add volume mount to preserve data (currently for development I prefer without)
+
+  queue:
+    image: rabbitmq:3-management
+    environment:
+      - "RABBITMQ_DEFAULT_USER=admin"
+      - "RABBITMQ_DEFAULT_PASS=admin"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "25672:25672"
 
 networks:
   default:
