@@ -45,7 +45,7 @@ services:
     environment:
       - OCRD_WEBAPI_SERVER_PATH=http://141.5.109.66
       - OCRD_WEBAPI_BASE_DIR=/tmp/ocrd-webapi-data
-      - OCRD_WEBAPI_DB_URL=mongodb://172.17.0.1:27018
+      - OCRD_WEBAPI_DB_URL=mongodb://admin:admin@172.17.0.1:27018
       - OCRD_WEBAPI_DB_NAME=ocrd
       - OCRD_WEBAPI_USERNAME={{ webapiuser }}
       - OCRD_WEBAPI_PASSWORD={{ webapipass }}
