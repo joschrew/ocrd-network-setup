@@ -67,3 +67,13 @@ Ansible
 - I have a ansible-script to to a basic cloud-server setup (I use that for all my vms): install some
   stuff like fzf and ripgrep, disable password login, vimrc, docker-mtu etc. But this is not
   included here, this playbook is only about what is specific for ocrd-webapi/processing-server
+
+
+Examples / Test
+---------------
+- the examples folder contains example workflows and my script which I use to test a running installation
+
+### usage
+- create config.yaml from template config.example.yaml. Fill variables especially `HOST`, `USER` and
+  `PASSWORD` which are required for running a workflow
+- `./ocrd-ps-test-tool.py run-workflow -e PAGE wf_halle_example.nf`

@@ -1,0 +1,9 @@
+HOST = "141.5.345.678"
+HOST_LOCAL = "localhost:8000"
+HOST_PS_LOCAL = "localhost:8080"
+USER = "username"
+PASSWORD = "password"
+DEFAULT_WORKSPACE_ID = "test1"
+
+EXAMPLE_WS = "/home/user/mygits/github/ocrd-webapi-implementation/things/example_ws.ocrd.zip"
+EXAMPLE_WF_SIMPLE = "/home/user/github/ocrd-webapi-implementation/things/nextflow-simple.nf"
