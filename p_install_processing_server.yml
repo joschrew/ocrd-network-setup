@@ -1,4 +1,14 @@
 ---
+#
+# Purpose of this playbook is to prepare running ocrd processing server with
+# ocrd-webapi-implementation to the VM. It can be locically devided into 3 parts:
+# 1. Generall tasks like installing needed software, add ssh-keys for developers and uploading
+#    scripts for maintanance
+# 2. Preparing to run processing server and webapi: copy files and scripts, create folder for
+#    volume-mount
+# 3. Installing ocrd and processors to a venv: The processing server runs in Docker and deploys
+#    the processors to the host system. Therefore a venv is used wich is installed via ocrd_all
+#
 - hosts: ocrd-dev
   vars:
     - core_repo_path: /home/cloud/repos/core
@@ -6,38 +16,18 @@
     - webapiuser: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapiuser }}"
     - webapipass: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapipass }}"
 
-  # roles:
-  #   - role: install_mongosh
 
   tasks:
 
+  #
+  # General tasks: install depedencies, maintanance
+  #
   - name: Install dependencies with a apt
     become: true
     apt:
       pkg:
         - make
         - python3-pip
-
-  - name: Clone ocrd_all
-    git:
-      repo: https://github.com/OCR-D/ocrd_all
-      dest: "$HOME/repos/ocrd_all"
-      update: false
-      recursive: false
-
-  - name: install dependencies for ocrd_all
-    command: make deps-ubuntu
-    become: true
-    args:
-      chdir: /home/cloud/repos/ocrd_all
-      creates: /home/cloud/repos/ocrd_all/venv
-
-  - name: create venv with ocrd_all (takes about 35 Minutes)
-    command: make all
-    args:
-      chdir: /home/cloud/repos/ocrd_all
-      creates: /home/cloud/repos/ocrd_all/venv
-
   - name: Add ssh keys for coworkers to log into vm
     authorized_key:
       user: cloud
@@ -45,13 +35,72 @@
       key: "{{ lookup('file', item) }}"
     with_fileglob:
       - files/ocrd-processing-server/ssh-pub-keys/*.pub
-
   - name: Create tools dir
     file:
       path: $HOME/tools
       state: directory
       mode: '0755'
+  - name: Copy script for updating the venv regarding core
+    copy:
+      src: files/ocrd-processing-server/update-core-in-venv.sh
+      dest: /home/cloud/tools/update-core-in-venv.sh
+      mode: '0755'
+  # roles:
+  #   - role: install_mongosh
 
+
+  #
+  # Prepare running the processing-server
+  #
+  - name: Copy script for depoloying the service
+    copy:
+      src: files/ocrd-processing-server/start-docker.py
+      dest: /home/cloud/start.py
+      mode: '0755'
+  - name: Install stuff with pip needed to run the startup-script
+    pip:
+      name:
+        - click
+        - sh
+  - name: Upload config-file for processing-server
+    copy:
+      src: '{{ item }}'
+      dest: $HOME/tools
+    loop:
+      - files/ocrd-processing-server/ocrd-ps-config.yml
+  # the workers are run as user cloud, volume folder should have cloud as owner to be writeable
+  # properly
+  - name: Create volume folder for workspaces
+    file:
+      path: /tmp/ocrd-webapi-data
+      state: directory
+      mode: '0755'
+  - name: Upload docker-compose
+    template:
+      src: files/ocrd-processing-server/docker-compose.yml
+      dest: $HOME/tools
+
+
+  #
+  # Install ocrd-processors to venv to make running workers on host possible
+  #
+  - name: Clone ocrd_all
+    git:
+      repo: https://github.com/OCR-D/ocrd_all
+      dest: "$HOME/repos/ocrd_all"
+      update: false
+      recursive: false
+  - name: install dependencies for ocrd_all
+    command: make deps-ubuntu
+    become: true
+    args:
+      chdir: /home/cloud/repos/ocrd_all
+      creates: /home/cloud/repos/ocrd_all/venv
+  - name: create venv with ocrd_all (takes about 35 Minutes)
+    command: make all
+    args:
+      chdir: /home/cloud/repos/ocrd_all
+      creates: /home/cloud/repos/ocrd_all/venv
   - name: Add venv to PATH
     blockinfile:
       marker: "# {mark} ANSIBLE MANAGED BLOCK Add venv to PATH"
@@ -60,75 +109,26 @@
         if [ -d '{{ venv_path }}/bin' ] && [[ ":$PATH:" != *":{{ venv_path }}/bin:"* ]]; then
           PATH={{ venv_path }}/bin:$PATH
         fi
-
   - name: Create ssh-key for self login
     openssh_keypair:
       path: "~/.ssh/ocrd-self-login.key"
       type: rsa
       force: no
-
   - name: Read ssh-key for next task
     command: "cat $HOME/.ssh/ocrd-self-login.key.pub"
     register: myownpubkey
-
   - name: Add ssh-key for self login
     authorized_key:
       user: cloud
       state: present
       key: "{{ myownpubkey.stdout }}"
-
-  - name: Clone webapi
-    git:
-      repo: https://github.com/OCR-D/ocrd-webapi-implementation
-      dest: "$HOME/repos/ocrd-webapi-implementation"
-      version: "v0.10.0"
-
-  - name: Upload  files for processing-server
-    copy:
-      src: '{{ item }}'
-      dest: $HOME/tools
-    loop:
-      - files/ocrd-processing-server/Dockerfile
-      - files/ocrd-processing-server/ocrd-ps-config.yml
-
-  - name: Upload docker-compose
-    template:
-      src: files/ocrd-processing-server/docker-compose.yml
-      dest: $HOME/tools
-
-  # the workers are run as user cloud, volume folder should have cloud as owner to be writeable
-  # properly
-  - name: Create volume folder for workspaces
-    file:
-      path: /tmp/ocrd-webapi-data
-      state: directory
-      mode: '0755'
-
-  - name: Copy script for depoloying the service
-    copy:
-      src: files/ocrd-processing-server/start-docker.py
-      dest: /home/cloud/start.py
-      mode: '0755'
-
-  - name: Install stuff with pip needed to run the startup-script
-    pip:
-      name:
-        - click
-        - sh
-
   - name: Upload script to download ocrd-models
     copy:
       src: files/ocrd-processing-server/download-ocrd-resources.sh
       dest: $HOME/tools/download-ocrd-resources.sh
       mode: '0755'
-
   - name: call ocrd-models-download-script
     command:
       cmd: bash tools/download-ocrd-resources.sh
       creates: /home/cloud/.local/share/ocrd-resources
 
-  - name: Copy script for updating the venv regarding core
-    copy:
-      src: files/ocrd-processing-server/update-core-in-venv.sh
-      dest: /home/cloud/tools/update-core-in-venv.sh
-      mode: '0755'
