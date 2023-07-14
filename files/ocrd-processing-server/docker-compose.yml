@@ -32,7 +32,7 @@ services:
 
   webapi:
     container_name: ocrd-webapi
-    build: https://github.com/OCR-D/ocrd-webapi-implementation.git#v0.10.0
+    build: https://github.com/OCR-D/ocrd-webapi-implementation.git#v0.10.1
     ports:
       - 8001:8000
     volumes:
