@@ -16,9 +16,8 @@ services:
 
   processing-server:
     container_name: ocrd-processing-server
-    # replace with image when everything needed was merged
     build:
-      context: https://github.com/OCR-D/core.git#ocrd-network-optional-deploy
+      context: https://github.com/OCR-D/core.git
       args:
         BASE_IMAGE: ubuntu:20.04
     ports:
