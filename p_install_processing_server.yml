@@ -1,7 +1,7 @@
 ---
 #
 # Purpose of this playbook is to prepare running ocrd processing server with
-# ocrd-webapi-implementation to the VM. It can be locically devided into 3 parts:
+# ocrd-webapi-implementation to the VM. It can be logically divided into 3 parts:
 # 1. Generall tasks like installing needed software, add ssh-keys for developers and uploading
 #    scripts for maintanance
 # 2. Preparing to run processing server and webapi: copy files and scripts, create folder for
@@ -11,10 +11,10 @@
 #
 - hosts: ocrd-dev
   vars:
-    - core_repo_path: /home/cloud/repos/core
-    - venv_path: /home/cloud/repos/ocrd_all/venv
-    - webapiuser: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapiuser }}"
-    - webapipass: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapipass }}"
+    core_repo_path: /home/cloud/repos/core
+    venv_path: /home/cloud/repos/ocrd_all/venv
+    webapiuser: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapiuser }}"
+    webapipass: "{{ ( lookup('file', 'vars-ocrd.yml') | from_yaml).webapipass }}"
 
 
   tasks:
