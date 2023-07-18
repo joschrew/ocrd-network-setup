@@ -300,6 +300,7 @@ process ocrd_calamari_recognize {
   exec:
     job_status = exec_block_logic("ocrd-calamari-recognize", input_dir, output_dir, null, '{"checkpoint_dir": "qurator-gt4histocr-1.0"}')
     println "ocrd_calamari_recognize returning flag: ${job_status}"
+    exit(0)
 }
 
 workflow {

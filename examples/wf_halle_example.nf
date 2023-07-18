@@ -328,6 +328,7 @@ process ocrd_tesserocr_recognize {
     job_status = exec_block_logic("ocrd-tesserocr-recognize", input_dir, output_dir, null,
         '{"model": "Fraktur", "textequiv_level": "word"}')
     println "ocrd_tesserocr_recognize returning flag: ${job_status}"
+    exit(0)
 }
 
 workflow {
