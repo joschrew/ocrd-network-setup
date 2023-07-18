@@ -134,7 +134,7 @@ def configure_and_consume_polling(result_queue_name){
   } catch (Exception error) {
     println("Caught exception: ${error}")
   }
-
+  rmq_connection.close()
   return job_status
 }
 
@@ -300,7 +300,6 @@ process ocrd_calamari_recognize {
   exec:
     job_status = exec_block_logic("ocrd-calamari-recognize", input_dir, output_dir, null, '{"checkpoint_dir": "qurator-gt4histocr-1.0"}')
     println "ocrd_calamari_recognize returning flag: ${job_status}"
-    exit(0)
 }
 
 workflow {
