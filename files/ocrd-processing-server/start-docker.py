@@ -48,11 +48,12 @@ def stop():
 def clean(force=False):
     """ Reset everything regarding docker
 
-    Stop docker-containers, remove workspaces from disc
+    Stop docker-containers, remove workspaces and workflows from disc
     """
-    workspaces_dir = "/tmp/ocrd-webapi-data/workspaces"
+    workspaces_dir = "/tmp/ocrd-webapi-data/workspace"
+    workflows_dir = "/tmp/ocrd-webapi-data/workflow"
     if not force:
-        x = input(f"This deletes {workspaces_dir}. Type 'yes' to continue\n")
+        x = input(f"This deletes {workspaces_dir} and {workflows_dir}. Type 'yes' to continue\n")
 
         if x != 'yes':
             print("abort")
